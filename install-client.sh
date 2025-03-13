@@ -27,8 +27,15 @@ if ! command -v java &> /dev/null; then
     fi
 fi
 
-# Download and run the client
-echo "Downloading chat client..."
-curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/get-client.sh > get-client.sh
-chmod +x get-client.sh
-./get-client.sh 
+# Download the client script
+echo "Downloading client script..."
+curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/get-client.sh > ~/get-client.sh
+
+# Make it executable
+chmod +x ~/get-client.sh
+
+# Execute it
+~/get-client.sh
+
+# Clean up
+rm ~/get-client.sh 
