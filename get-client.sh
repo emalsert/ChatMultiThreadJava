@@ -6,9 +6,9 @@ cd ~/chat-client
 
 # Download the client files
 echo "Downloading chat client..."
-wget https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/ChatClient.java
-wget https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/ReadThread.java
-wget https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/WriteThread.java
+curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/ChatClient.java > ChatClient.java
+curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/ReadThread.java > ReadThread.java
+curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/WriteThread.java > WriteThread.java
 
 # Compile the client
 echo "Compiling chat client..."
