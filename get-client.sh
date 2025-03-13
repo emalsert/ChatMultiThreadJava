@@ -14,9 +14,10 @@ curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/clie
 echo "Compiling chat client..."
 javac -source 11 -target 11 client/*.java
 
-# Run the client
+# Run the client from the root directory
 echo "Starting chat client..."
-java client.ChatClient 167.86.109.247 1234
+cd ~/chat-client
+java -cp . client.ChatClient 167.86.109.247 1234
 
 # Clean up
 cd ..
