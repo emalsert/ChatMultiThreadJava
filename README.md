@@ -37,6 +37,8 @@ java server.ChatServer 1234
 
 ### Client
 
+#### On macOS/Linux:
+
 The client can be installed and run with a single command:
 
 ```bash
@@ -53,8 +55,24 @@ curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/inst
 chmod +x install-client.sh && ./install-client.sh
 ```
 
+#### On Windows:
+
+1. Download the installation script:
+   - Open PowerShell and run:
+   ```powershell
+   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/install-client.bat" -OutFile "install-client.bat"
+   ```
+   - Or download it manually from the repository
+
+2. Run the script:
+   - Double-click `install-client.bat`
+   - Or open Command Prompt and run:
+   ```cmd
+   install-client.bat
+   ```
+
 The installation script will:
-1. Check if Java is installed and install it if necessary
+1. Check if Java is installed and provide instructions if it's not
 2. Download and compile the client code
 3. Launch the chat client
 
@@ -82,7 +100,8 @@ The installation script will:
   - `ChatClient.java` - Main client class
   - `ReadThread.java` - Handles incoming messages
   - `WriteThread.java` - Handles outgoing messages
-- `install-client.sh` - Client installation script
+- `install-client.sh` - Client installation script for macOS/Linux
+- `install-client.bat` - Client installation script for Windows
 - `get-client.sh` - Client download and execution script
 
 ## License
