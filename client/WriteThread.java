@@ -2,8 +2,9 @@ package client;
 
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.Scanner;
 
 /**
  * WriteThread is a thread that handles user input from the console and sends it to the server.
@@ -12,7 +13,7 @@ import java.util.Scanner;
 public class WriteThread extends Thread {
     private Socket socket;
     private PrintWriter out;
-    private Scanner scanner;
+    private BufferedReader reader;
 
     /**
      * Constructs a WriteThread for a given client socket.
@@ -32,20 +33,20 @@ public class WriteThread extends Thread {
     public void run() {
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
-            scanner = new Scanner(System.in);
+            reader = new BufferedReader(new InputStreamReader(System.in));
 
             // Prompt for pseudonym and send it to the server
             System.out.print("Enter your pseudonym: ");
             System.out.flush();
-            String pseudonyme = scanner.nextLine();
+            String pseudonyme = reader.readLine();
             out.println(pseudonyme);
 
             System.out.println("You can now send messages. Type 'exit' to quit.");
 
             // Read messages from the user and send them to the server
             while (true) {
-                String message = scanner.nextLine();
-                if (message.equalsIgnoreCase("exit")) {
+                String message = reader.readLine();
+                if (message == null || message.equalsIgnoreCase("exit")) {
                     out.println("exit");
                     break;
                 }
@@ -54,8 +55,12 @@ public class WriteThread extends Thread {
         } catch (IOException e) {
             System.err.println("Error sending message: " + e.getMessage());
         } finally {
-            if (scanner != null) {
-                scanner.close();
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                System.err.println("Error closing reader: " + e.getMessage());
             }
         }
     }
