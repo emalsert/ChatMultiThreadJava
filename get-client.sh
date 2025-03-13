@@ -17,7 +17,7 @@ javac -source 11 -target 11 client/*.java
 # Run the client from the root directory
 echo "Starting chat client..."
 cd ~/chat-client
-java -cp . client.ChatClient 167.86.109.247 1234
+java -Dfile.encoding=UTF-8 -Djava.awt.headless=true -cp . client.ChatClient 167.86.109.247 1234
 
 # Clean up
 cd ..
