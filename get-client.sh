@@ -4,19 +4,13 @@
 mkdir -p ~/chat-client
 cd ~/chat-client
 
-# Download the client files
+# Download the client JAR
 echo "Downloading chat client..."
-wget https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/ChatClient.java
-wget https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/ReadThread.java
-wget https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/WriteThread.java
-
-# Compile the client
-echo "Compiling chat client..."
-javac -source 11 -target 11 *.java
+curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/client/chat-client.jar > chat-client.jar
 
 # Run the client
 echo "Starting chat client..."
-java ChatClient 167.86.109.247 1234
+java -jar chat-client.jar 167.86.109.247 1234
 
 # Clean up
 cd ..

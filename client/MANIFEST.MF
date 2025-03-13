@@ -1,1 +1,2 @@
-Main-Class: client.ChatClient 
+Main-Class: client.ChatClient
+Class-Path: . 
