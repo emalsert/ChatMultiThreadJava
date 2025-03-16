@@ -10,42 +10,55 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ChatServer is the main server class that listens for incoming client connections 
- * and broadcasts messages to all connected clients. It uses a separate thread 
- * (ClientHandler) for each connected client to handle communication.
+ * ChatServer est la classe principale du serveur de chat.
+ * Elle ne fait pas d'héritage mais gère la liste des clients connectés et coordonne
+ * les communications entre eux via les ClientHandler.
+ * 
+ * Cette classe travaille en tandem avec ClientHandler :
+ * - ChatServer gère la liste des clients et la diffusion des messages
+ * - ClientHandler gère la communication individuelle avec chaque client
+ * 
+ * Le flux de fonctionnement est le suivant :
+ * 1. ChatServer démarre et écoute les connexions entrantes
+ * 2. Pour chaque nouveau client, un ClientHandler est créé
+ * 3. Le ClientHandler est ajouté à la liste des clients actifs
+ * 4. Les messages sont diffusés à tous les clients via leurs ClientHandler
  */
 public class ChatServer {
 
-    /** List of client handler threads for all connected clients. */
+    /** Liste des gestionnaires de clients pour tous les clients connectés. */
     private static final List<ClientHandler> clientHandlers = new ArrayList<>();
 
-    /** Default port number for the server. */
+    /** Port par défaut du serveur. */
     private static final int DEFAULT_PORT = 1234;
 
     /**
-     * Adds a new client handler to the list of connected clients.
+     * Ajoute un nouveau gestionnaire de client à la liste des clients connectés.
+     * Cette méthode est synchronisée pour éviter les modifications concurrentes.
      * 
-     * @param client The ClientHandler to add.
+     * @param client Le ClientHandler à ajouter
      */
     public static synchronized void addClient(ClientHandler client) {
         clientHandlers.add(client);
     }
 
     /**
-     * Removes a client handler from the list of connected clients.
+     * Retire un gestionnaire de client de la liste des clients connectés.
+     * Cette méthode est synchronisée pour éviter les modifications concurrentes.
      * 
-     * @param client The ClientHandler to remove.
+     * @param client Le ClientHandler à retirer
      */
     public static synchronized void removeClient(ClientHandler client) {
         clientHandlers.remove(client);
     }
 
     /**
-     * Generates a unique pseudonym for a new client by appending a number if needed
-     * to avoid duplicates. This method checks existing connected clients' pseudonyms.
+     * Génère un pseudonyme unique pour un nouveau client en ajoutant un nombre
+     * si nécessaire pour éviter les doublons. Cette méthode vérifie les pseudonymes
+     * existants des clients connectés.
      * 
-     * @param desiredPseudo The pseudonym requested by the new client.
-     * @return A unique pseudonym (either the same as desiredPseudo if not taken, or modified with a number).
+     * @param desiredPseudo Le pseudonyme demandé par le nouveau client
+     * @return Un pseudonyme unique (soit le même que desiredPseudo si non pris, soit modifié avec un nombre)
      */
     public static synchronized String getUniquePseudo(String desiredPseudo) {
         String newPseudo = desiredPseudo;
@@ -66,15 +79,16 @@ public class ChatServer {
     }
 
     /**
-     * Broadcasts a message to all connected clients except the sender.
-     * This method is synchronized to prevent concurrent modifications to the clients list.
+     * Diffuse un message à tous les clients connectés sauf l'expéditeur.
+     * Cette méthode est synchronisée pour éviter les modifications concurrentes
+     * de la liste des clients.
      * 
-     * @param message The message to broadcast.
-     * @param sender  The ClientHandler of the client sending the message (to be excluded).
+     * @param message Le message à diffuser
+     * @param sender Le ClientHandler du client envoyant le message (à exclure)
      */
     public static synchronized void broadcastMessage(String message, ClientHandler sender) {
         for (ClientHandler client : clientHandlers) {
-            // Send the message to everyone except the sender
+            // Envoie le message à tous sauf l'expéditeur
             if (client != sender) {
                 client.sendMessage(message);
             }
@@ -82,11 +96,11 @@ public class ChatServer {
     }
 
     /**
-     * The main method to start the chat server.
-     * It listens on a specified port (or default port) for incoming client connections.
-     * For each new connection, a ClientHandler thread is started.
+     * Point d'entrée du programme serveur.
+     * Il écoute sur un port spécifié (ou le port par défaut) pour les connexions
+     * entrantes. Pour chaque nouvelle connexion, un thread ClientHandler est démarré.
      * 
-     * @param args Command-line arguments (optional port number as first argument).
+     * @param args Arguments de la ligne de commande (port optionnel comme premier argument)
      */
     public static void main(String[] args) {
         int port = DEFAULT_PORT;
@@ -101,10 +115,10 @@ public class ChatServer {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Chat server started on port " + port + ".");
             System.out.println("Waiting for client connections...");
-            // Infinite loop to accept incoming client connections
+            // Boucle infinie pour accepter les connexions entrantes
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                // Create a new thread for the connected client
+                // Crée un nouveau thread pour le client connecté
                 ClientHandler clientThread = new ClientHandler(clientSocket);
                 clientThread.start();
             }
