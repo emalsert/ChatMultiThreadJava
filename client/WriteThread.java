@@ -7,8 +7,18 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 
 /**
- * WriteThread is a thread that handles user input from the console and sends it to the server.
- * It runs in parallel to allow the user to type messages while the ReadThread listens for server messages.
+ * WriteThread est un thread qui gère l'entrée utilisateur depuis la console et l'envoie au serveur.
+ * Il hérite de la classe Thread de Java pour permettre l'exécution parallèle.
+ * 
+ * Cette classe travaille en tandem avec ReadThread :
+ * - WriteThread gère l'envoi des messages (sortie)
+ * - ReadThread gère la réception des messages (entrée)
+ * 
+ * Le flux de communication est le suivant :
+ * 1. L'utilisateur tape un message dans la console
+ * 2. WriteThread capture ce message via BufferedReader
+ * 3. Le message est envoyé au serveur via PrintWriter
+ * 4. ReadThread reçoit les messages du serveur et les affiche
  */
 public class WriteThread extends Thread {
     private Socket socket;
@@ -16,18 +26,26 @@ public class WriteThread extends Thread {
     private BufferedReader reader;
 
     /**
-     * Constructs a WriteThread for a given client socket.
+     * Constructeur de WriteThread.
+     * Initialise la connexion avec le serveur via le socket fourni.
      * 
-     * @param socket the socket connected to the chat server.
+     * @param socket le socket connecté au serveur de chat
      */
     public WriteThread(Socket socket) {
         this.socket = socket;
     }
 
     /**
-     * Reads user input from the console and sends it to the server.
-     * It first prompts for a unique pseudonym, then continually reads messages to send.
-     * If the user types "exit", it will inform the server and terminate the connection.
+     * Méthode principale du thread.
+     * Elle est appelée automatiquement lors du démarrage du thread.
+     * 
+     * Le processus est le suivant :
+     * 1. Demande un pseudonyme à l'utilisateur
+     * 2. Envoie ce pseudonyme au serveur
+     * 3. Entre dans une boucle infinie pour :
+     *    - Lire les messages de l'utilisateur
+     *    - Les envoyer au serveur
+     *    - Gérer la commande de sortie ("exit")
      */
     @Override
     public void run() {
@@ -35,7 +53,7 @@ public class WriteThread extends Thread {
             out = new PrintWriter(socket.getOutputStream(), true);
             reader = new BufferedReader(new InputStreamReader(System.in));
 
-            // Prompt for pseudonym and send it to the server
+            // Demande et envoie le pseudonyme
             System.out.print("Enter your pseudonym: ");
             System.out.flush();
             String pseudonyme = reader.readLine();
@@ -43,7 +61,7 @@ public class WriteThread extends Thread {
 
             System.out.println("You can now send messages. Type 'exit' to quit.");
 
-            // Read messages from the user and send them to the server
+            // Boucle principale de lecture et envoi des messages
             while (true) {
                 String message = reader.readLine();
                 if (message == null || message.equalsIgnoreCase("exit")) {
@@ -64,4 +82,4 @@ public class WriteThread extends Thread {
             }
         }
     }
-} 
+}

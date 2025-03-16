@@ -1,58 +1,73 @@
 package client;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 
 /**
- * ReadThread is a thread that listens for messages from the server and prints them to the console.
- * It runs in the background to constantly receive server messages.
+ * ReadThread est un thread qui gère la réception des messages du serveur.
+ * Il hérite de la classe Thread de Java pour permettre l'exécution parallèle.
+ * 
+ * Cette classe travaille en tandem avec WriteThread :
+ * - ReadThread gère la réception des messages (entrée)
+ * - WriteThread gère l'envoi des messages (sortie)
+ * 
+ * Le flux de communication est le suivant :
+ * 1. Le serveur envoie un message
+ * 2. ReadThread le reçoit via BufferedReader
+ * 3. Le message est affiché dans la console
+ * 4. WriteThread continue à écouter les entrées utilisateur
  */
 public class ReadThread extends Thread {
     private Socket socket;
     private BufferedReader in;
 
     /**
-     * Constructs a ReadThread for a given client socket.
+     * Constructeur de ReadThread.
+     * Initialise la connexion avec le serveur via le socket fourni.
      * 
-     * @param socket the socket connected to the chat server.
+     * @param socket le socket connecté au serveur de chat
      */
     public ReadThread(Socket socket) {
         this.socket = socket;
     }
 
     /**
-     * Continuously reads messages from the server and displays them.
-     * If the server connection is lost or closed, it handles the termination of the client.
+     * Méthode principale du thread.
+     * Elle est appelée automatiquement lors du démarrage du thread.
+     * 
+     * Le processus est le suivant :
+     * 1. Configure le BufferedReader pour lire les messages du serveur
+     * 2. Entre dans une boucle infinie pour :
+     *    - Lire les messages du serveur
+     *    - Les afficher dans la console
+     *    - Gérer la déconnexion si le serveur se déconnecte
      */
     @Override
     public void run() {
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String serverMessage;
-            while ((serverMessage = in.readLine()) != null) {
-                if (serverMessage.equals("You have been disconnected from the server.")) {
-                    // Server is informing this client of disconnection
-                    System.out.println(serverMessage);
+
+            // Boucle principale de lecture des messages
+            while (true) {
+                String message = in.readLine();
+                if (message == null) {
+                    System.out.println("Server disconnected.");
                     break;
                 }
-                System.out.println(serverMessage);
-            }
-            if (serverMessage == null) {
-                // Server connection closed unexpectedly
-                System.out.println("Lost connection to server.");
+                System.out.println(message);
             }
         } catch (IOException e) {
-            System.out.println("Lost connection to server.");
+            System.err.println("Error reading message: " + e.getMessage());
         } finally {
             try {
-                socket.close();
-            } catch (IOException ex) {
-                // Ignore errors on close
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException e) {
+                System.err.println("Error closing reader: " + e.getMessage());
             }
-            // Exit the program if the server has disconnected
-            System.exit(0);
         }
     }
 } 

@@ -4,52 +4,80 @@ import java.net.Socket;
 import java.io.IOException;
 
 /**
- * ChatClient is the main class for the chat client application.
- * It connects to the chat server and starts two threads:
- * one for reading messages from the server, and one for sending user input to the server.
+ * ChatClient est la classe principale du client de chat.
+ * Elle ne fait pas d'héritage mais coordonne les deux threads principaux :
+ * - ReadThread : pour la réception des messages
+ * - WriteThread : pour l'envoi des messages
+ * 
+ * Le flux de fonctionnement est le suivant :
+ * 1. ChatClient établit la connexion avec le serveur
+ * 2. Crée et démarre ReadThread pour écouter les messages
+ * 3. Crée et démarre WriteThread pour gérer les entrées utilisateur
+ * 4. Les deux threads s'exécutent en parallèle
+ * 
+ * Cette architecture multi-thread permet :
+ * - De recevoir des messages même pendant qu'on en écrit
+ * - Une interface utilisateur réactive
+ * - Une gestion efficace des entrées/sorties
  */
 public class ChatClient {
-
-    /** Default server host if none provided. */
-    private static final String DEFAULT_HOST = "localhost";
-    /** Default server port if none provided. */
-    private static final int DEFAULT_PORT = 1234;
+    private String hostname;
+    private int port;
+    private String username;
 
     /**
-     * The main method to start the chat client.
-     * Connects to the server at the specified host and port, then starts 
-     * the ReadThread and WriteThread for message handling.
+     * Constructeur de ChatClient.
+     * Initialise les paramètres de connexion.
      * 
-     * @param args Command-line arguments (optional host and port).
+     * @param hostname l'adresse du serveur
+     * @param port le port du serveur
+     */
+    public ChatClient(String hostname, int port) {
+        this.hostname = hostname;
+        this.port = port;
+    }
+
+    /**
+     * Méthode principale qui établit la connexion et démarre les threads.
+     * 
+     * Le processus est le suivant :
+     * 1. Crée un socket pour se connecter au serveur
+     * 2. Crée et démarre ReadThread pour la réception
+     * 3. Crée et démarre WriteThread pour l'envoi
+     * 4. Les threads s'exécutent en parallèle
+     */
+    public void execute() {
+        try {
+            Socket socket = new Socket(hostname, port);
+            System.out.println("Connected to chat server " + hostname + " on port " + port);
+
+            // Création et démarrage des threads
+            new ReadThread(socket).start();
+            new WriteThread(socket).start();
+
+        } catch (IOException ex) {
+            System.out.println("Error connecting to server: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Point d'entrée du programme.
+     * Vérifie les arguments et lance le client.
+     * 
+     * @param args les arguments de la ligne de commande
+     *             args[0] : hostname (optionnel, défaut: localhost)
+     *             args[1] : port (optionnel, défaut: 1234)
      */
     public static void main(String[] args) {
-        String host = DEFAULT_HOST;
-        int port = DEFAULT_PORT;
-        if (args.length > 0) {
-            host = args[0];
-        }
-        if (args.length > 1) {
-            try {
-                port = Integer.parseInt(args[1]);
-            } catch (NumberFormatException e) {
-                System.err.println("Invalid port, using default port " + DEFAULT_PORT);
-                port = DEFAULT_PORT;
-            }
+        if (args.length < 2) {
+            System.out.println("Syntax: java ChatClient <hostname> <port>");
+            System.exit(0);
         }
 
-        try {
-            Socket socket = new Socket(host, port);
-            System.out.println("Connected to chat server " + host + " on port " + port);
+        String hostname = args[0];
+        int port = Integer.parseInt(args[1]);
 
-            // Start the thread to listen for server messages
-            ReadThread readThread = new ReadThread(socket);
-            readThread.start();
-
-            // Start the thread to handle user input and send messages
-            WriteThread writeThread = new WriteThread(socket);
-            writeThread.start();
-        } catch (IOException ex) {
-            System.err.println("Unable to connect to server: " + ex.getMessage());
-        }
+        ChatClient client = new ChatClient(hostname, port);
+        client.execute();
     }
 } 
