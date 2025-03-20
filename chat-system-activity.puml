@@ -1,0 +1,60 @@
+@startuml Chat System - Activity Diagram
+
+' Style
+skinparam ActivityBackgroundColor LightBlue
+skinparam ActivityBorderColor Black
+skinparam ArrowColor Black
+
+|Server|
+start
+:Start Server;
+:Listen for Connections;
+
+while (Server Running?) is (yes)
+  :Accept Client Connection;
+  :Create ClientHandler;
+  :Add to clientHandlers;
+  :Broadcast Welcome Message;
+  
+  |ClientHandler|
+  fork
+    :Initialize Streams;
+    :Read Client Messages;
+    while (Client Connected?) is (yes)
+      :Process Message;
+      :Broadcast to Other Clients;
+    endwhile (no)
+    :Remove Client;
+    :Close Connection;
+  end fork
+  
+  |Client|
+  fork
+    :Initialize ChatClient;
+    :Connect to Server;
+    fork
+      |ReadThread|
+      :Initialize BufferedReader;
+      while (Client Active?) is (yes)
+        :Read Server Messages;
+        :Display Messages;
+      endwhile (no)
+    fork again
+      |WriteThread|
+      :Initialize PrintWriter;
+      while (Client Active?) is (yes)
+        :Read User Input;
+        :Send to Server;
+        if (Exit Command?) then (yes)
+          :Close Connection;
+          stop
+        endif
+      endwhile (no)
+    end fork
+  end fork
+endwhile (no)
+
+:Shutdown Server;
+stop
+
+@enduml 

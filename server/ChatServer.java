@@ -23,14 +23,52 @@ import java.util.List;
  * 2. Pour chaque nouveau client, un ClientHandler est créé
  * 3. Le ClientHandler est ajouté à la liste des clients actifs
  * 4. Les messages sont diffusés à tous les clients via leurs ClientHandler
+ * 
+ * Note sur l'utilisation de 'final' :
+ * - Les attributs marqués 'final' ne peuvent pas être réassignés après leur initialisation
+ * - clientHandlers : la référence à la liste est fixe, mais son contenu peut changer
+ * - port : le port d'écoute du serveur reste constant après initialisation
+ * Cette immutabilité garantit la stabilité des références tout en permettant
+ * la gestion dynamique des clients
  */
 public class ChatServer {
 
     /** Liste des gestionnaires de clients pour tous les clients connectés. */
-    private static final List<ClientHandler> clientHandlers = new ArrayList<>();
+    private final List<ClientHandler> clientHandlers;
 
     /** Port par défaut du serveur. */
     private static final int DEFAULT_PORT = 1234;
+
+    private final int port;
+    private ServerSocket serverSocket;
+
+    /**
+     * Constructeur du ChatServer
+     * @param port Le port sur lequel le serveur écoutera
+     */
+    public ChatServer(int port) {
+        this.port = port;
+        this.clientHandlers = new ArrayList<>();
+    }
+
+    /**
+     * Démarre le serveur et commence à écouter les connexions
+     */
+    public void start() throws IOException {
+        serverSocket = new ServerSocket(port);
+        System.out.println("Chat server started on port " + port + ".");
+        System.out.println("Waiting for client connections...");
+
+        while (true) {
+            try {
+                Socket clientSocket = serverSocket.accept();
+                ClientHandler clientThread = new ClientHandler(clientSocket, this);
+                clientThread.start();
+            } catch (IOException e) {
+                System.err.println("Error accepting client connection: " + e.getMessage());
+            }
+        }
+    }
 
     /**
      * Ajoute un nouveau gestionnaire de client à la liste des clients connectés.
@@ -38,7 +76,7 @@ public class ChatServer {
      * 
      * @param client Le ClientHandler à ajouter
      */
-    public static synchronized void addClient(ClientHandler client) {
+    public synchronized void addClient(ClientHandler client) {
         clientHandlers.add(client);
     }
 
@@ -48,7 +86,7 @@ public class ChatServer {
      * 
      * @param client Le ClientHandler à retirer
      */
-    public static synchronized void removeClient(ClientHandler client) {
+    public synchronized void removeClient(ClientHandler client) {
         clientHandlers.remove(client);
     }
 
@@ -60,7 +98,7 @@ public class ChatServer {
      * @param desiredPseudo Le pseudonyme demandé par le nouveau client
      * @return Un pseudonyme unique (soit le même que desiredPseudo si non pris, soit modifié avec un nombre)
      */
-    public static synchronized String getUniquePseudo(String desiredPseudo) {
+    public synchronized String getUniquePseudo(String desiredPseudo) {
         String newPseudo = desiredPseudo;
         int count = 1;
         boolean exists;
@@ -86,7 +124,7 @@ public class ChatServer {
      * @param message Le message à diffuser
      * @param sender Le ClientHandler du client envoyant le message (à exclure)
      */
-    public static synchronized void broadcastMessage(String message, ClientHandler sender) {
+    public synchronized void broadcastMessage(String message, ClientHandler sender) {
         for (ClientHandler client : clientHandlers) {
             // Envoie le message à tous sauf l'expéditeur
             if (client != sender) {
@@ -103,6 +141,7 @@ public class ChatServer {
      * @param args Arguments de la ligne de commande (port optionnel comme premier argument)
      */
     public static void main(String[] args) {
+        // 1. Initialisation du port
         int port = DEFAULT_PORT;
         if (args.length > 0) {
             try {
@@ -112,19 +151,14 @@ public class ChatServer {
                 port = DEFAULT_PORT;
             }
         }
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Chat server started on port " + port + ".");
-            System.out.println("Waiting for client connections...");
-            // Boucle infinie pour accepter les connexions entrantes
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                // Crée un nouveau thread pour le client connecté
-                ClientHandler clientThread = new ClientHandler(clientSocket);
-                clientThread.start();
-            }
+
+        // 2. Création et initialisation du ServerSocket
+        ChatServer server = new ChatServer(port);
+        try {
+            server.start();
         } catch (IOException e) {
-            System.err.println("Server error: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Could not start server: " + e.getMessage());
+            System.exit(1);
         }
     }
 } 

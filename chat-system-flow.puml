@@ -1,0 +1,88 @@
+@startuml Chat System - Class Diagram
+
+' Style
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor LightBlue
+    ArrowColor Black
+    BorderColor Black
+}
+
+' Classes principales
+class ChatServer {
+    - List<ClientHandler> clientHandlers
+    - int DEFAULT_PORT
+    + {static} addClient(ClientHandler)
+    + {static} removeClient(ClientHandler)
+    + {static} getUniquePseudo(String)
+    + {static} broadcastMessage(String, ClientHandler)
+    + {static} main(String[])
+}
+
+class ClientHandler {
+    - Socket clientSocket
+    - PrintWriter out
+    - BufferedReader in
+    - String pseudo
+    + ClientHandler(Socket)
+    + getPseudo()
+    + sendMessage(String)
+    + run()
+}
+
+class ChatClient {
+    - String hostname
+    - int port
+    + ChatClient(String, int)
+    + execute()
+    + main(String[])
+}
+
+class ReadThread {
+    - BufferedReader reader
+    + ReadThread(Socket)
+    + run()
+}
+
+class WriteThread {
+    - PrintWriter writer
+    - BufferedReader reader
+    + WriteThread(Socket)
+    + run()
+}
+
+' Relations entre classes
+ChatServer "1" *-- "*" ClientHandler : manages
+ChatClient "1" *-- "1" ReadThread : creates
+ChatClient "1" *-- "1" WriteThread : creates
+ClientHandler --|> Thread : extends
+ReadThread --|> Thread : extends
+WriteThread --|> Thread : extends
+
+' Notes
+note right of ChatServer
+  Gère la liste des clients
+  et la diffusion des messages
+end note
+
+note right of ClientHandler
+  Gère la communication
+  avec un client unique
+end note
+
+note right of ChatClient
+  Point d'entrée du client,
+  coordonne ReadThread et WriteThread
+end note
+
+note right of ReadThread
+  Gère la réception
+  des messages
+end note
+
+note right of WriteThread
+  Gère l'envoi
+  des messages
+end note
+
+@enduml 
