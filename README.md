@@ -1,133 +1,109 @@
 # Chat Multi-Thread Java
 
-Une application de chat simple et multi-threadée écrite en Java.
+A simple multi-threaded chat application written in Java. The application consists of a server that can handle multiple clients simultaneously, and a client that can connect to the server and exchange messages.
 
-## Fonctionnalités
+## Features
 
-- Serveur multi-threadé capable de gérer plusieurs clients simultanément
-- Diffusion des messages en temps réel
-- Interface graphique simple avec Swing
-- Support des pseudonymes personnalisés
-- Gestion propre des déconnexions
+- Multi-threaded server that can handle multiple clients
+- Real-time message broadcasting to all connected clients
+- Simple command-line interface
+- Support for custom usernames
+- Graceful disconnection handling
 
-## Prérequis
+## Prerequisites
 
-- Java 11 ou supérieur
-- Terminal ou invite de commandes
-- Pour le serveur : un serveur Linux (VPS recommandé)
+- Java 11 or higher
+- A terminal/command prompt
 
 ## Installation
 
-### Installation du serveur
+### Server
 
-1. Clonez le dépôt :
+1. Clone the repository:
 ```bash
 git clone https://github.com/emalsert/ChatMultiThreadJava.git
 cd ChatMultiThreadJava
 ```
 
-2. Compilez le serveur :
+2. Compile the server:
 ```bash
-javac server/*.java
+javac -source 11 -target 11 server/*.java
 ```
 
-3. Lancez le serveur :
+3. Run the server:
 ```bash
-java server.ChatServer
+java server.ChatServer 1234
 ```
 
-### Installation du client
+### Client
 
-#### Sur macOS/Linux :
+#### On macOS/Linux:
+
+The client can be installed and run with a single command:
+
 ```bash
 curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/install-client.sh | bash
 ```
 
-#### Sur Windows :
-1. Téléchargez le script d'installation :
-```powershell
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/install-client.bat" -OutFile "install-client.bat"
-```
+Or in two steps for better input handling:
 
-2. Exécutez le script :
-```cmd
-install-client.bat
-```
-
-## Déploiement sur VPS
-
-Pour déployer le serveur sur un VPS Linux :
-
-1. Connectez-vous à votre VPS en SSH :
 ```bash
-ssh root@votre-vps
+# Download the installation script
+curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/install-client.sh > install-client.sh
+
+# Make it executable and run it
+chmod +x install-client.sh && ./install-client.sh
 ```
 
-2. Téléchargez le script de déploiement :
-```bash
-wget https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/deploy.sh
-```
+#### On Windows:
 
-3. Rendez le script exécutable :
-```bash
-chmod +x deploy.sh
-```
+1. Download the installation script:
+   - Open PowerShell and run:
+   ```powershell
+   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/install-client.bat" -OutFile "install-client.bat"
+   ```
+   - Or download it manually from the repository
 
-4. Exécutez le script :
-```bash
-./deploy.sh
-```
+2. Run the script:
+   - Double-click `install-client.bat`
+   - Or open Command Prompt and run:
+   ```cmd
+   install-client.bat
+   ```
 
-Le script va :
-- Installer Java si nécessaire
-- Créer un répertoire pour le serveur
-- Télécharger et compiler les fichiers source
-- Configurer un service systemd pour le serveur
-- Démarrer le serveur automatiquement
+The installation script will:
+1. Check if Java is installed and provide instructions if it's not
+2. Download and compile the client code
+3. Launch the chat client
 
-Pour vérifier le statut du serveur :
-```bash
-systemctl status chat-server
-```
+## Usage
 
-Pour voir les logs :
-```bash
-journalctl -u chat-server
-```
+### Server
 
-## Utilisation
+1. Start the server as described in the installation section
+2. The server will listen on the specified port (default: 1234)
+3. Wait for clients to connect
 
-1. Démarrez le serveur (si en local) :
-```bash
-java server.ChatServer
-```
+### Client
 
-2. Lancez le client :
-```bash
-java client.ChatGUI
-```
+1. Run the client as described in the installation section
+2. Enter your pseudonym when prompted
+3. Start chatting! Type your messages and press Enter to send them
+4. Type 'exit' to quit the chat
 
-3. Entrez votre pseudonyme dans la fenêtre de connexion
+## Project Structure
 
-4. Commencez à chatter !
+- `server/` - Contains the server implementation
+  - `ChatServer.java` - Main server class
+  - `ClientHandler.java` - Handles individual client connections
+- `client/` - Contains the client implementation
+  - `ChatClient.java` - Main client class
+  - `ReadThread.java` - Handles incoming messages
+  - `WriteThread.java` - Handles outgoing messages
+- `install-client.sh` - Client installation script for macOS/Linux
+- `install-client.bat` - Client installation script for Windows
+- `get-client.sh` - Client download and execution script
 
-## Structure du projet
+## License
 
-```
-ChatMultiThreadJava/
-├── server/
-│   ├── ChatServer.java     # Classe principale du serveur
-│   └── ClientHandler.java  # Gestion des connexions clients
-├── client/
-│   ├── ChatGUI.java       # Interface graphique du client
-│   ├── ReadThread.java    # Thread de lecture des messages
-│   └── WriteThread.java   # Thread d'envoi des messages
-├── install-client.sh      # Script d'installation pour macOS/Linux
-├── install-client.bat     # Script d'installation pour Windows
-├── deploy.sh             # Script de déploiement pour VPS
-└── README.md             # Documentation
-```
-
-## Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails. 
+This project is open source and available under the MIT License. 
