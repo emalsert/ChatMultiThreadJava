@@ -21,18 +21,14 @@ import java.net.Socket;
  * 4. Chaque ClientHandler envoie le message à son client respectif
  * 
  * Note sur l'utilisation de 'final' :
- * - Les attributs marqués 'final' ne peuvent pas être réassignés après leur initialisation
  * - clientSocket : garantit que la connexion socket reste la même
  * - server : garantit que la référence au serveur ne change pas
- * Cette immutabilité assure la stabilité des connexions et des références
  */
 public class ClientHandler extends Thread {
-    // Socket de connexion client (final : ne changera pas après initialisation)
     private final Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
     private String pseudo;
-    // Référence au serveur (final : restera le même pendant toute la durée de vie du handler)
     private final ChatServer server;
 
     /**
@@ -70,6 +66,11 @@ public class ClientHandler extends Thread {
      * Méthode principale du thread qui gère la communication avec le client.
      * Elle est appelée automatiquement lors du démarrage du thread.
      * 
+     * Cette méthode est marquée @Override car elle redéfinit la méthode run()
+     * de la classe Thread dont ClientHandler hérite. Quand start() est appelé,
+     * un nouveau thread est créé et cette méthode run() est exécutée dans ce thread.
+     * Cela permet de gérer chaque client de manière indépendante et parallèle.
+     * 
      * Le processus est le suivant :
      * 1. Initialise les flux d'entrée/sortie pour ce client
      * 2. Lit le pseudonyme envoyé par le client
@@ -90,7 +91,6 @@ public class ClientHandler extends Thread {
             // Lit le pseudonyme envoyé par le client
             pseudo = in.readLine();
             if (pseudo == null) {
-                // Le client s'est déconnecté immédiatement
                 return;
             }
 
@@ -98,34 +98,34 @@ public class ClientHandler extends Thread {
             String originalPseudo = pseudo;
             pseudo = server.getUniquePseudo(originalPseudo);
             if (!pseudo.equals(originalPseudo)) {
-                // Informe le client du changement de pseudonyme
                 out.println("Pseudonym already taken, you have been renamed to " + pseudo);
             }
 
-            // Ajoute ce client à la liste du serveur et annonce aux autres
+            // Ajoute ce client à la liste du serveur
             server.addClient(this);
+
+            // Log dans la console du serveur uniquement
             System.out.println("New user connected: " + pseudo);
+            
+            // Annonce à tous les autres clients (broadcast) qu'un nouveau client est arrivé
             server.broadcastMessage("User " + pseudo + " has joined the conversation.", this);
-            // Message de bienvenue au nouveau client
+            
+            // Message de bienvenue envoyé uniquement au nouveau client
             out.println("Welcome to the chat, " + pseudo + "!");
 
             String message;
             // Écoute les messages du client
             while ((message = in.readLine()) != null) {
                 if (message.equalsIgnoreCase("exit")) {
-                    // Le client a initié la déconnexion
                     out.println("You have been disconnected from the server.");
-                    // Notifie les autres clients de la déconnexion
                     server.broadcastMessage("User " + pseudo + " has left the conversation.", this);
                     break;
                 }
-                // Diffuse le message reçu aux autres clients
                 server.broadcastMessage(pseudo + ": " + message, this);
             }
 
             // Si on sort de la boucle sans un "exit" du client (message == null signifie déconnexion)
             if (message == null) {
-                // Notifie les autres que le client est parti de manière inattendue
                 server.broadcastMessage("User " + pseudo + " has left the conversation.", this);
             }
         } catch (IOException e) {

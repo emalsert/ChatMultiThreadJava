@@ -32,7 +32,7 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/opt/chat-app/deploy
-ExecStart=/usr/bin/java server.ChatServer 1234
+ExecStart=/usr/bin/java server.ChatServer 12345
 Restart=always
 
 [Install]
@@ -46,4 +46,4 @@ systemctl enable chat-server
 systemctl start chat-server
 
 echo "Installation completed!"
-echo "Chat server is running on port 1234" 
+echo "Chat server is running on port 12345" 

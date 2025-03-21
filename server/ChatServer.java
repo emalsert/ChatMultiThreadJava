@@ -6,8 +6,8 @@ import java.io.PrintWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * ChatServer est la classe principale du serveur de chat.
@@ -26,18 +26,23 @@ import java.util.List;
  * 
  * Note sur l'utilisation de 'final' :
  * - Les attributs marqués 'final' ne peuvent pas être réassignés après leur initialisation
- * - clientHandlers : la référence à la liste est fixe, mais son contenu peut changer
+ * - clientHandlers : la référence au set est fixe, mais son contenu peut changer
  * - port : le port d'écoute du serveur reste constant après initialisation
  * Cette immutabilité garantit la stabilité des références tout en permettant
  * la gestion dynamique des clients
  */
 public class ChatServer {
 
-    /** Liste des gestionnaires de clients pour tous les clients connectés. */
-    private final List<ClientHandler> clientHandlers;
+    /** HashSet des gestionnaires de clients pour tous les clients connectés.
+     * Utilisation de HashSet pour :
+     * - Recherche en O(1) vs O(n) pour ArrayList
+     * - Pas de doublons possibles
+     * - L'ordre n'est pas important pour la diffusion des messages
+     */
+    private final Set<ClientHandler> clientHandlers;
 
     /** Port par défaut du serveur. */
-    private static final int DEFAULT_PORT = 1234;
+    private static final int DEFAULT_PORT = 12345;
 
     private final int port;
     private ServerSocket serverSocket;
@@ -48,13 +53,27 @@ public class ChatServer {
      */
     public ChatServer(int port) {
         this.port = port;
-        this.clientHandlers = new ArrayList<>();
+        this.clientHandlers = new HashSet<>();
     }
 
     /**
-     * Démarre le serveur et commence à écouter les connexions
+     * Démarre le serveur et commence à écouter les connexions entrantes.
+     * Cette méthode est le cœur du serveur, elle :
+     * 1. Crée un ServerSocket qui écoute sur le port spécifié
+     * 2. Entre dans une boucle infinie d'acceptation des connexions
+     * 3. Pour chaque nouvelle connexion :
+     *    - Crée un nouveau ClientHandler
+     *    - Démarre un nouveau thread pour ce client
+     *    - Continue d'écouter pour d'autres connexions
+     * 
+     * La méthode utilise un try-catch pour gérer les erreurs de connexion
+     * sans arrêter le serveur. Ainsi, si un client échoue à se connecter,
+     * le serveur continue de fonctionner pour les autres clients.
+     * 
+     * @throws IOException Si une erreur survient lors de la création du ServerSocket
      */
     public void start() throws IOException {
+        // Initialise le socket serveur sur le port configuré
         serverSocket = new ServerSocket(port);
         System.out.println("Chat server started on port " + port + ".");
         System.out.println("Waiting for client connections...");
@@ -126,7 +145,6 @@ public class ChatServer {
      */
     public synchronized void broadcastMessage(String message, ClientHandler sender) {
         for (ClientHandler client : clientHandlers) {
-            // Envoie le message à tous sauf l'expéditeur
             if (client != sender) {
                 client.sendMessage(message);
             }
