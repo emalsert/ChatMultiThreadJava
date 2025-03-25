@@ -101,7 +101,7 @@ public class ChatServer {
 
     /**
      * Retire un gestionnaire de client de la liste des clients connectés.
-     * Cette méthode est synchronisée pour éviter les modifications concurrentes.
+     * Cette méthode est aussi synchronisée.
      * 
      * @param client Le ClientHandler à retirer
      */
@@ -137,8 +137,8 @@ public class ChatServer {
 
     /**
      * Diffuse un message à tous les clients connectés sauf l'expéditeur.
-     * Cette méthode est synchronisée pour éviter les modifications concurrentes
-     * de la liste des clients.
+     * Cette méthode est naturellement synchronisée pour éviter les envois
+     * de messages concurrents.
      * 
      * @param message Le message à diffuser
      * @param sender Le ClientHandler du client envoyant le message (à exclure)
