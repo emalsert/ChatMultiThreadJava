@@ -57,21 +57,21 @@ public class ReadThread extends Thread {
             while (true) {
                 String message = in.readLine();
                 if (message == null) {
-                    System.out.println("Server disconnected.");
+                    System.out.println("Le serveur s'est arrêté.");
                     break;
                 }
                 // Affiche le message reçu dans la console du client
                 System.out.println(message);
             }
         } catch (IOException e) {
-            System.err.println("Error reading from server: " + e.getMessage());
+            System.err.println("Erreur lors de la lecture du serveur : " + e.getMessage());
         } finally {
             try {
                 if (in != null) {
                     in.close();
                 }
             } catch (IOException e) {
-                System.err.println("Error closing reader: " + e.getMessage());
+                System.err.println("Erreur lors de la fermeture du lecteur : " + e.getMessage());  
             }
         }
     }

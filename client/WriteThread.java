@@ -63,12 +63,12 @@ public class WriteThread extends Thread {
             reader = new BufferedReader(new InputStreamReader(System.in));
 
             // Demande et envoie le pseudonyme
-            System.out.print("Enter your pseudonym: ");
+            System.out.print("Entrez votre pseudonyme: ");
             System.out.flush();
             String pseudonyme = reader.readLine(); 
             out.println(pseudonyme);              
 
-            System.out.println("You can now send messages. Type 'exit' to quit.");
+            System.out.println("Vous pouvez maintenant envoyer des messages. Tapez 'exit' pour quitter.");
 
             // Boucle principale de lecture des messages utilisateur et envoi au serveur
             while (true) {
@@ -80,14 +80,17 @@ public class WriteThread extends Thread {
                 out.println(message);             
             }
         } catch (IOException e) {
-            System.err.println("Error sending to server: " + e.getMessage());
+            System.err.println("Erreur lors de l'envoi au serveur : " + e.getMessage());
         } finally {
             try {
                 if (reader != null) {
                     reader.close();
                 }
+                if (out != null) {
+                    out.close();
+                }
             } catch (IOException e) {
-                System.err.println("Error closing reader: " + e.getMessage());
+                System.err.println("Erreur lors de la fermeture du lecteur ou de l'envoi : " + e.getMessage());
             }
         }
     }

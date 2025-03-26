@@ -105,20 +105,32 @@ public class ClientHandler extends Thread {
             server.addClient(this);
 
             // Log dans la console du serveur uniquement
-            System.out.println("New user connected: " + pseudo);
+            System.out.println("Nouvel utilisateur connecté: " + pseudo);
             
             // Annonce à tous les autres clients (broadcast) qu'un nouveau client est arrivé
-            server.broadcastMessage("User " + pseudo + " has joined the conversation.", this);
+            server.broadcastMessage("Utilisateur " + pseudo + " a rejoint la conversation.", this);
             
             // Message de bienvenue envoyé uniquement au nouveau client
-            out.println("Welcome to the chat, " + pseudo + "!");
+            out.println("Bienvenue dans le chat, " + pseudo + "!");
+
+            // Afficher la liste des participants
+            StringBuilder participants = new StringBuilder("Participants actuels : ");
+            boolean first = true;
+            for (ClientHandler client : server.getClientHandlers()) {
+                if (!first) {
+                    participants.append(", ");
+                }
+                participants.append(client.getPseudo());
+                first = false;
+            }
+            out.println(participants.toString());
 
             String message;
             // Écoute les messages du client
             while ((message = in.readLine()) != null) {
                 if (message.equalsIgnoreCase("exit")) {
-                    out.println("You have been disconnected from the server.");
-                    server.broadcastMessage("User " + pseudo + " has left the conversation.", this);
+                    out.println("Vous avez été déconnecté du serveur.");
+                    server.broadcastMessage("Utilisateur " + pseudo + " a quitté la conversation.", this);
                     break;
                 }
                 server.broadcastMessage(pseudo + ": " + message, this);
@@ -126,16 +138,16 @@ public class ClientHandler extends Thread {
 
             // Si on sort de la boucle sans un "exit" du client (message == null signifie déconnexion)
             if (message == null) {
-                server.broadcastMessage("User " + pseudo + " has left the conversation.", this);
+                server.broadcastMessage("Utilisateur " + pseudo + " a quitté la conversation.", this);
             }
         } catch (IOException e) {
             // Gère les erreurs inattendues (ex: client déconnecté de force)
-            System.err.println("Communication error with " + pseudo + ": " + e.getMessage());
-            server.broadcastMessage("User " + pseudo + " has left the conversation.", this);
+            System.err.println("Erreur de communication avec " + pseudo + ": " + e.getMessage());
+            server.broadcastMessage("Utilisateur " + pseudo + " a quitté la conversation.", this);
         } finally {
             // Retire ce client de la liste et ferme les ressources
             if (pseudo != null) {
-                System.out.println(pseudo + " has disconnected.");
+                System.out.println(pseudo + " a été déconnecté.");
                 server.removeClient(this);
             }
             try {

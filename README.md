@@ -43,6 +43,10 @@ Le serveur utilise un thread principal et des threads clients :
    - Gère les connexions entrantes
    - Maintient une liste des clients connectés
    - Coordonne la diffusion des messages
+   - Utilise un HashSet pour stocker les clients :
+     * Permet une recherche rapide des clients
+     * Évite les doublons automatiquement
+     * Gestion efficace des ajouts/suppressions
 
 2. **ClientHandler (Un thread par client)**
    - Hérite de `Thread` pour l'exécution parallèle
@@ -137,83 +141,63 @@ Démonstration de la robustesse du système :
 
 ## Installation
 
-### Option 1 : Installation Automatique du Serveur (Linux)
+### Installation du Serveur
 
 ```bash
-# Télécharger et exécuter le script d'installation
-curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/install.sh | sudo bash
-```
-
-Le script va :
-- Installer Java 11
-- Créer le répertoire `/opt/chat-app`
-- Configurer le service systemd
-- Démarrer le serveur sur le port 12345
-
-### Option 2 : Installation Manuelle du Serveur
-
-```bash
-# Cloner le dépôt
+# 1. Cloner le dépôt
 git clone https://github.com/emalsert/ChatMultiThreadJava.git
 cd ChatMultiThreadJava
 
-# Compiler
-javac -source 11 -target 11 server/*.java
+# 2. Compiler le serveur
+javac --release 11 server/*.java
 
-# Lancer (remplacer 12345 par le port souhaité)
-java server.ChatServer 12345
+# 3. Lancer le serveur (utilise le port par défaut 12345)
+java server.ChatServer
 ```
 
 ### Installation du Client
 
-#### Option 1 : Installation Rapide (macOS/Linux)
-
 ```bash
-# Tout-en-un : télécharge, compile et lance le client
-curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/install-client.sh | bash
+# 1. Dans le même répertoire que le serveur
+
+# 2. Compiler le client
+javac --release 11 client/*.java
+
+# 3. Lancer le client
+# Syntaxe : java client.ChatClient [hostname] [port]
+#   - hostname : localhost ou adresse IP valide (ex: 192.168.1.100)
+#   - port : numéro de port (1-65535, défaut: 12345)
+
+# Exemples :
+java client.ChatClient
+java client.ChatClient localhost
+java client.ChatClient 192.168.1.100 12345
 ```
-
-#### Option 2 : Installation en Deux Étapes (macOS/Linux)
-
-```bash
-# 1. Télécharger le script
-curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/install-client.sh > install-client.sh
-
-# 2. Exécuter
-chmod +x install-client.sh && ./install-client.sh
-```
-
-#### Option 3 : Installation Directe (tous OS)
-
-```bash
-# 1. Télécharger le script get-client
-curl -s https://raw.githubusercontent.com/emalsert/ChatMultiThreadJava/main/get-client.sh > get-client.sh
-
-# 2. Exécuter
-chmod +x get-client.sh && ./get-client.sh
-```
-
-Le script `get-client.sh` va :
-- Créer un dossier temporaire
-- Télécharger les fichiers sources
-- Compiler le code
-- Lancer le client
-- Nettoyer les fichiers temporaires
 
 ## Utilisation
 
 ### Serveur
 
 1. Démarrer le serveur selon les instructions d'installation
-2. Le serveur écoute sur le port spécifié (par défaut : 12345)
+2. Le serveur écoute sur le port 12345 par défaut
 3. Attendre les connexions des clients
 
 ### Client
 
 1. Lancer le client selon les instructions d'installation
-2. Entrer un pseudonyme à l'invite
-3. Commencer à chatter ! Taper les messages et appuyer sur Entrée pour envoyer
-4. Taper 'exit' pour quitter
+2. Spécifier l'adresse du serveur (localhost ou IP) et le port si nécessaire
+3. Entrer un pseudonyme à l'invite
+4. Commencer à chatter ! Taper les messages et appuyer sur Entrée pour envoyer
+5. Taper 'exit' pour quitter
+
+### Validation des Paramètres
+
+Le client vérifie la validité des paramètres de connexion :
+- L'adresse du serveur doit être :
+  * "localhost" pour une connexion locale
+  * Une adresse IP valide (ex: 192.168.1.100)
+- Le port doit être un nombre compris entre 1 et 65535
+- En cas d'erreur, un message explicatif est affiché avec des exemples d'utilisation
 
 ## Structure du Projet
 
@@ -224,9 +208,6 @@ Le script `get-client.sh` va :
   - `ChatClient.java` - Classe principale du client
   - `ReadThread.java` - Gère les messages entrants
   - `WriteThread.java` - Gère les messages sortants
-- `install.sh` - Script d'installation du serveur
-- `install-client.sh` - Script d'installation du client
-- `get-client.sh` - Script de téléchargement et d'exécution
 
 ## Licence
 

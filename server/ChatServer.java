@@ -35,9 +35,9 @@ public class ChatServer {
 
     /** HashSet des gestionnaires de clients pour tous les clients connectés.
      * Utilisation de HashSet pour :
-     * - Recherche en O(1) vs O(n) pour ArrayList
+     * - Permet une recherche rapide des clients
      * - Pas de doublons possibles
-     * - L'ordre n'est pas important pour la diffusion des messages
+     * - Gestion efficace des ajouts et retraits de clients
      */
     private final Set<ClientHandler> clientHandlers;
 
@@ -46,6 +46,7 @@ public class ChatServer {
 
     private final int port;
     private ServerSocket serverSocket;
+
 
     /**
      * Constructeur du ChatServer
@@ -75,8 +76,8 @@ public class ChatServer {
     public void start() throws IOException {
         // Initialise le socket serveur sur le port configuré
         serverSocket = new ServerSocket(port);
-        System.out.println("Chat server started on port " + port + ".");
-        System.out.println("Waiting for client connections...");
+        System.out.println("Serveur Chat démarré sur le port " + port + ".");
+        System.out.println("En attente de connexions clients...");
 
         while (true) {
             try {
@@ -84,7 +85,7 @@ public class ChatServer {
                 ClientHandler clientThread = new ClientHandler(clientSocket, this);
                 clientThread.start();
             } catch (IOException e) {
-                System.err.println("Error accepting client connection: " + e.getMessage());
+                System.err.println("Erreur lors de l'acceptation de la connexion client: " + e.getMessage());
             }
         }
     }
@@ -152,6 +153,16 @@ public class ChatServer {
     }
 
     /**
+     * Retourne la liste des gestionnaires de clients connectés.
+     * Cette méthode est synchronisée pour éviter les modifications concurrentes.
+     * 
+     * @return La liste des ClientHandler connectés
+     */
+    public synchronized Set<ClientHandler> getClientHandlers() {
+        return new HashSet<>(clientHandlers);
+    }
+
+    /**
      * Point d'entrée du programme serveur.
      * Il écoute sur un port spécifié (ou le port par défaut) pour les connexions
      * entrantes. Pour chaque nouvelle connexion, un thread ClientHandler est démarré.
@@ -165,7 +176,7 @@ public class ChatServer {
             try {
                 port = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
-                System.err.println("Invalid port, using default port " + DEFAULT_PORT);
+                System.err.println("Port invalide, utilisation du port par défaut " + DEFAULT_PORT);
                 port = DEFAULT_PORT;
             }
         }
@@ -175,7 +186,7 @@ public class ChatServer {
         try {
             server.start();
         } catch (IOException e) {
-            System.err.println("Could not start server: " + e.getMessage());
+            System.err.println("Impossible de démarrer le serveur: " + e.getMessage());
             System.exit(1);
         }
     }
