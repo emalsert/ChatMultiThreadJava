@@ -98,7 +98,7 @@ public class ClientHandler extends Thread {
             String originalPseudo = pseudo;
             pseudo = server.getUniquePseudo(originalPseudo);
             if (!pseudo.equals(originalPseudo)) {
-                out.println("Pseudonym already taken, you have been renamed to " + pseudo);
+                out.println("Pseudonyme déjà pris, vous avez été renommé en " + pseudo);
             }
 
             // Ajoute ce client à la liste du serveur

@@ -9,6 +9,7 @@ Une application de chat multi-threadée simple écrite en Java. L'application se
 - Interface en ligne de commande simple
 - Support des pseudonymes personnalisés
 - Gestion élégante des déconnexions
+- Serveur distant disponible (167.86.109.247:12345) pour tester l'application immédiatement
 
 ## Architecture Détaillée
 
@@ -186,9 +187,9 @@ javac --release 11 client/*.java
 #   - port : numéro de port (1-65535, défaut: 12345)
 
 # Exemples :
-java client.ChatClient
-java client.ChatClient localhost
-java client.ChatClient 192.168.1.100 12345
+java client.ChatClient                    # Connexion locale
+java client.ChatClient localhost          # Connexion locale explicite
+java client.ChatClient 167.86.109.247    # Connexion au serveur public mis en place
 ```
 
 ## Utilisation
@@ -228,4 +229,5 @@ Le client vérifie la validité des paramètres de connexion :
 
 ## Licence
 
-Ce projet est open source et disponible sous la licence MIT. 
+Ce projet est open source et disponible sous la licence MIT.
+
