@@ -18,22 +18,35 @@ L'application utilise une architecture client-serveur multi-threadée pour perme
 
 ### Côté Client
 
-Le client utilise deux threads principaux :
+#### ChatClient.java
+- **Rôle** : Classe principale du client qui coordonne la communication avec le serveur
+- **Fonctionnalités** :
+  - Gère la connexion au serveur
+  - Crée et démarre les threads de lecture et d'écriture
+  - Coordonne l'échange de messages entre le client et le serveur
+  - Gestion robuste des erreurs de connexion :
+    * Validation des adresses IP (format xxx.xxx.xxx.xxx) ou localhost
+    * Vérification des ports (1-65535)
+    * Gestion des erreurs de connexion au serveur
+- **Architecture** :
+  - Utilise deux threads distincts :
+    - `ReadThread` : gère la réception des messages du serveur
+    - `WriteThread` : gère l'envoi des messages au serveur
+  - Permet une communication bidirectionnelle en temps réel
+  - Gère la déconnexion propre du client
 
-1. **WriteThread (CLIENT → SERVEUR)**
-   - Hérite de `Thread` pour l'exécution parallèle
-   - Gère l'envoi des messages vers le serveur
-   - Flux de données :
-     * Lit l'entrée utilisateur via `System.in`
-     * Envoie les messages au serveur via `socket.getOutputStream()`
-   - Gère l'authentification initiale (pseudonyme)
+#### ReadThread.java
+- **Rôle** : Gère la réception des messages du serveur
+- **Fonctionnalités** :
+  - Reçoit les messages via `socket.getInputStream()`
+  - Affiche les messages dans la console
 
-2. **ReadThread (SERVEUR → CLIENT)**
-   - Hérite de `Thread` pour l'exécution parallèle
-   - Gère la réception des messages du serveur
-   - Flux de données :
-     * Reçoit les messages via `socket.getInputStream()`
-     * Affiche les messages dans la console
+#### WriteThread.java
+- **Rôle** : Gère l'envoi des messages au serveur
+- **Fonctionnalités** :
+  - Lit l'entrée utilisateur via `System.in`
+  - Envoie les messages au serveur via `socket.getOutputStream()`
+  - Gère l'authentification initiale (pseudonyme)
 
 ### Côté Serveur
 
@@ -51,6 +64,10 @@ Le serveur utilise un thread principal et des threads clients :
 2. **ClientHandler (Un thread par client)**
    - Hérite de `Thread` pour l'exécution parallèle
    - Gère la communication avec un client spécifique
+   - Assure l'unicité des pseudonymes :
+     * Vérifie si le pseudo demandé est déjà utilisé
+     * Ajoute un numéro si nécessaire (ex: Alice1, Alice2)
+     * Notifie le client si son pseudo a été modifié
    - Types de messages :
      * Messages console (logs serveur)
      * Messages broadcast (vers tous les autres clients)
